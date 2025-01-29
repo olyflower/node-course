@@ -1,45 +1,45 @@
-	import fs, { mkdirSync } from "fs";
-	import path from "path";
-	import levels from "./levels.js";
-	import formatMessage from "./formatter.js";
+import fs, { mkdirSync } from "fs";
+import path from "path";
+import levels from "./levels.js";
+import formatMessage from "./formatter.js";
+import { LOCAL_ENV } from "./constants.js";
 
-	class Logger {
-		constructor(logPath = "logs/app.log") {
-			this.logPath = logPath;
-			if (!fs.existsSync(path.dirname(this.logPath))) {
-				mkdirSync(path.dirname(this.logPath), { recursive: true });
-			}
-		}
-
-		__log(level, msg) {
-			
-			const formattedMsg = formatMessage(level, msg);
-
-			if (process.env.APP_ENV === "local") {
-				console.log(formattedMsg);
-			} else {
-				fs.appendFile(this.logPath, `${formattedMsg} \n`, (err) => {
-					if (err) {
-						console.error(
-							"Error while try to put data to file",
-							err.message
-						);
-					}
-				});
-			}
-		}
-
-		info(msg) {
-			this.__log(levels.INFO, msg);
-		}
-
-		warning(msg) {
-			this.__log(levels.WARNING, msg);
-		}
-
-		error(err) {
-			this.__log(levels.ERROR, err);
+class Logger {
+	constructor(logPath = "logs/app.log") {
+		this.logPath = logPath;
+		if (!fs.existsSync(path.dirname(this.logPath))) {
+			mkdirSync(path.dirname(this.logPath), { recursive: true });
 		}
 	}
 
-	export default Logger;
+	__log(level, msg) {
+		const formattedMsg = formatMessage(level, msg);
+
+		if (process.env.APP_ENV === LOCAL_ENV) {
+			console.log(formattedMsg);
+		} else {
+			fs.appendFile(this.logPath, `${formattedMsg} \n`, (err) => {
+				if (err) {
+					console.error(
+						"Error while try to put data to file",
+						err.message
+					);
+				}
+			});
+		}
+	}
+
+	info(msg) {
+		this.__log(levels.INFO, msg);
+	}
+
+	warning(msg) {
+		this.__log(levels.WARNING, msg);
+	}
+
+	error(err) {
+		this.__log(levels.ERROR, err);
+	}
+}
+
+export default Logger;
