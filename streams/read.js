@@ -1,54 +1,77 @@
 import { Readable } from "node:stream";
-import { createReadStream } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import fs from "node:fs";
 
-const d = ["Hello", "World"];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const d = ["Hello", "World", "!"];
 
 // const stream = new Readable({
 // 	read() {
+
 // 		this.push("Hello");
 // 		this.push("World");
 // 		this.push(null);
 // 	},
 // });
 
-// class ReadableClass extends Readable {
-// 	constructor(options) {
-// 		super(options);
-// 	}
+class ReadableClass extends Readable {
+	constructor(filename, options = {}) {
+		super(options);
 
-// 	_read() {
-// 		d.forEach((item) => this.push(item));
-// 		this.push(null);
-// 	}
-// }
+		this.fd = fs.openSync(filename, "r");
+		this.bufferSize = options["bufferSize"] || 16384;
+		this.position = 0;
+	}
 
-// const stream = new ReadableClass({
-// 	highWaterMark: 1024,
+	_read(size) {
+		const buffer = Buffer.alloc(size);
+		fs.read(this.fd, buffer, 0, size, this.position, (err, bytesRead) => {
+			if (err) {
+				this.destroy(err);
+				return;
+			}
+
+			if (bytesRead > 0) {
+				this.push(buffer.subarray(0, bytesRead));
+
+				this.position += bytesRead;
+			} else {
+				this.push(null);
+			}
+		});
+	}
+
+	_destroy(err, cb) {
+		if (this.fd) {
+			fs.closeSync(this.fd);
+			this.fd = null;
+		}
+
+		if (cb) {
+			cb(err);
+		}
+	}
+}
+
+const filePath = path.join(__dirname, "users.txt");
+
+const stream = new ReadableClass(filePath, {
+	highWaterMark: 64 * 1024,
+	encoding: "utf8",
+});
+
+// const stream = fs.createReadStream(filePath, {
+// 	highWaterMark: 64 * 1024,
 // 	encoding: "utf8",
 // });
 
-// stream.on("data", (chunk) => {
-// 	console.log(chunk.toString("utf8"));
-// });
-
-// stream.on("end", () => {
-// 	console.log("Stream finished");
-// });
-
-
-const stream = createReadStream('users.txt', {
-	highWaterMark: 1024,
-	encoding: "utf8",
-})
-
-let count  = 0
-
 stream.on("data", (chunk) => {
+	console.log(chunk.toString("utf8"));
+});
 
-	++count
-	console.log(chunk.toString("utf8"))
-})
-
-stream.on('end', () => {
-	console.log('Stream finished', "count:", `${count}`)
-})
+stream.on("end", () => {
+	console.log("Stream finished");
+});
