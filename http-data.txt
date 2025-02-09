@@ -1,0 +1,25 @@
+
+==== New Request ====
+URL: /
+Method: POST
+Headers: {
+  "host": "localhost:3000",
+  "user-agent": "curl/7.81.0",
+  "accept": "*/*",
+  "content-type": "application/json",
+  "content-length": "16"
+}
+
+{"name":"Alice"}
+==== New Request ====
+URL: /
+Method: POST
+Headers: {
+  "host": "localhost:3000",
+  "user-agent": "curl/7.81.0",
+  "accept": "*/*",
+  "content-type": "application/json",
+  "content-length": "14"
+}
+
+{"name":"Bob"}
