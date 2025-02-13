@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
-import Logger from "./logger/logger.js";
-import LoggerNew from "./logger/logger_new.js";
+// import Logger from "./logger/logger.js";
+// import LoggerNew from "./logger/logger_new.js";
+import LoggerTransform from "./logger/logger_new_transform.js";
 // import { sleep } from "./utils/helper.js";
 
 dotenv.config();
 
-const logger = new Logger();
+// const logger = new Logger();
 
 // logger.info("Info message");
 // logger.error("Some error");
@@ -18,7 +19,12 @@ const logger = new Logger();
 
 // sleep(10_000).then(() => logger.info("after 10 ms"))
 
-const loggerNew = new LoggerNew();
-loggerNew.info("Info message");
-loggerNew.error("Some error");
-loggerNew.warning("Warning message");
+// const loggerNew = new LoggerNew();
+// loggerNew.info("Info message");
+// loggerNew.error("Some error");
+// loggerNew.warning("Warning message");
+
+const loggerTransform = new LoggerTransform();
+loggerTransform.info("info log Transform");
+loggerTransform.warning("warning log Transform");
+loggerTransform.error("error log Transform");
