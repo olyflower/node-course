@@ -45,7 +45,7 @@ server.on("request", (request, response) => {
 	console.log("URL", request.url, "Method", request.method);
 
 	if (request.method === "GET" && /^\/static/.test(request.url)) {
-		response.writeHead(500, {
+		response.writeHead(200, {
 			"content-type": "text/html",
 		});
 
