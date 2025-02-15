@@ -8,14 +8,14 @@ const server = http.createServer();
 server.on("request", (req, res) => {
 	if (req.method === "GET" && getRandomIntInclusive(1, 10) === 1) {
 		res.writeHead(500, {
-			"content-type": "application/json",
+			"content-type": "text/plain",
 		});
 
 		res.end("Error");
 	} else {
 		setTimeout(() => {
 			res.writeHead(200, {
-				"content-type": "application/json",
+				"content-type": "text/plain",
 			});
 
 			res.end("Text");
