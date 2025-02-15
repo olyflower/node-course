@@ -1,64 +1,72 @@
 import http from "node:http";
+// import https from 'node:https'
+// import http2 from "node:http2";
 import fs from "node:fs";
-import { parse } from "querystring";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import Logger from "./logger/logger_new.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const logger = new Logger();
+
+global.__filename = __filename;
+global.__dirname = __dirname;
 
 const APP_PORT = 3000;
 
-const server = http.createServer((request, response) => {
-	console.log(
-		"URL",
-		request.url,
-		"Method",
-		request.method,
-		"headers",
-		request.headers
-	);
+// const server = https.createServer()
+const server = http.createServer();
 
-	const writeStream = fs.createWriteStream("http-data.txt", { flags: "a" });
+// server.on("request", (request, response) => {
+// 	const options = {
+// 		hostname: "localhost",
+// 		path: request.path,
+// 		method: request.method,
+// 		headers: request.headers,
+// 		port: 3002,
+// 	};
 
-	writeStream.write(`\n==== New Request ====\n`);
-	writeStream.write(`URL: ${request.url}\n`);
-	writeStream.write(`Method: ${request.method}\n`);
-	writeStream.write(
-		`Headers: ${JSON.stringify(request.headers, null, 2)}\n\n`
-	);
+// 	const proxyReq = http.request(options, (proxyRes) => {
+// 		response.writeHead(proxyRes.statusCode, proxyRes.headers);
+// 		proxyRes.pipe(response);
+// 	});
 
-	request.pipe(writeStream);
+// 	request.pipe(proxyReq);
 
-	if (request.method === "POST") {
-		let body = "";
-		request.on("data", (data) => {
-			body += data.toString();
+// 	proxyReq.on("error", (err) => {
+// 		logger.error(err);
+// 		response.end("Proxy request failed", err.message);
+// 	});
+// });
+
+server.on("request", (request, response) => {
+	console.log("URL", request.url, "Method", request.method);
+
+	if (request.method === "GET" && /^\/static/.test(request.url)) {
+		response.writeHead(500, {
+			"content-type": "text/html",
 		});
 
-		request.on("end", () => {
-			let res = "";
+		const filePath = `${global.__dirname}${request.url}`;
+		const metaData = fs.lstatSync(filePath).isDirectory();
 
-			switch (
-				String(request.headers["content-type"]).toLocaleLowerCase()
-			) {
-				case "application/x-www-form-urlencoded":
-					res = parse(body);
-					break;
-				case "application/json":
-					res = JSON.parse(body);
-					break;
-				case "text/plain":
-					res = body;
-					break;
-				case "multipart/form-data":
-					break;
-			}
+		if (fs.lstatSync(filePath).isDirectory()) {
+			throw new Error("403 Forbidden action");
+		}
 
-			console.log({ res });
-		});
+		if (fs.lstatSync(filePath).isFile()) {
+			const fileData = fs.readFileSync(filePath);
+			response.end(fileData);
+		}
 	}
 
-	response.writeHead(200, {
-		"content-type": "application/json",
-	});
+	// response.writeHead(200, {
+	// 	"content-type": "application/json",
+	// });
 
-	response.end(JSON.stringify({ key: "value" }));
+	// response.end("Text");
 });
 
 server.listen(APP_PORT, () => {
